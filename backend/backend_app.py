@@ -39,15 +39,33 @@ def handle_posts():
         return jsonify(posts)
 
 
-@app.route('/api/posts/<int:id>', methods=['DELETE'])
-def delete_post(id):
-    to_delete = next((post for post in posts if post['id'] == id), None)
-    if to_delete is None:
-        return jsonify({"error": "This ID doesn't exist!"}), 404
+@app.route('/api/posts/<int:post_id>', methods=['DELETE', 'PUT'])
+def update_or_delete_post(post_id):
+    if request.method=='DELETE':
+        to_delete = next((post for post in posts if post['id'] == post_id), None)
+        if to_delete is None:
+            return jsonify({'error': 'This ID does not exist!'}), 404
+        else:
+            posts.remove(to_delete)
+            return jsonify({'success': 'the post has been deleted'})
     else:
-        posts.remove(to_delete), 200
+        updated_post = request.get_json()
+        new_title = updated_post.get('title')
+        new_content = updated_post.get('content')
 
+        to_update = next((post for post in posts if post['id'] == post_id), None)
 
+        if to_update is not None:
+
+            if new_title is not None:
+                to_update['title'] = new_title
+            if new_content is not None:
+                to_update['content'] = new_content
+
+            to_update['id'] = post_id
+
+            return jsonify(to_update), 200
+        return jsonify({'error': 'This ID does not exist'})
 
 
 
