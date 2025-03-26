@@ -68,6 +68,26 @@ def update_or_delete_post(post_id):
         return jsonify({'error': 'This ID does not exist'})
 
 
+@app.route('/api/posts/search', methods=['GET'])
+def search_post():
+    #putting empty string as default return so that I dont have to check for empty title/content AND none
+    request_param_title = request.args.get('title', '').strip().lower()
+    request_param_content = request.args.get('content', '').strip().lower()
+    if request_param_title and request_param_content:
+        found_posts = [post for post in posts if request_param_title in post['title'].lower() and request_param_content in post['content'].lower()]
+        return jsonify(found_posts)
+    if request_param_title:
+        found_posts_for_title = [post for post in posts if request_param_title in post['title'].lower()]
+        return jsonify(found_posts_for_title)
+    if request_param_content:
+        found_posts_for_content = [post for post in posts if request_param_content in post['content'].lower()]
+        return jsonify(found_posts_for_content)
+
+
+
+
+
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5002, debug=True)
