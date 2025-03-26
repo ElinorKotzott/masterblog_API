@@ -13,9 +13,7 @@ posts = [
 @app.route('/api/posts', methods=['GET', 'POST'])
 def handle_posts():
     if request.method == 'POST':
-
         new_post = request.get_json()
-
 
         if new_post['title'] and new_post['content']:
             new_id = max(post['id'] for post in posts) + 1
@@ -36,6 +34,26 @@ def handle_posts():
 
 
     else:
+        request_param_sort = request.args.get('sort', '').lower()
+        request_param_direction = request.args.get('direction', '').lower()
+
+        if request_param_sort and request_param_direction:
+            if request_param_sort == 'title':
+                if request_param_direction == 'asc':
+                    return jsonify(sorted(posts, key=lambda post: post['title']))
+                elif request_param_direction == 'desc':
+                    return jsonify(sorted(posts, key=lambda post: post['title'], reverse=True))
+                else:
+                    return jsonify({'error': 'invalid request parameter value for "direction"!'}), 400
+            elif request_param_sort == 'content':
+                if request_param_direction == 'asc':
+                    return jsonify(sorted(posts, key=lambda post: post['content']))
+                elif request_param_direction == 'desc':
+                    return jsonify(sorted(posts, key=lambda post: post['content'], reverse=True))
+                else:
+                    return jsonify({'error': 'invalid request parameter value for "direction"!'}), 400
+            else:
+                return jsonify({'error': 'invalid request parameter value for "sort"!'}), 400
         return jsonify(posts)
 
 
@@ -83,7 +101,7 @@ def search_post():
 
     if found_posts:
         return jsonify(found_posts)
-    return jsonify({'error': 'no posts matching your search!'})
+    return jsonify([])
 
 
 
