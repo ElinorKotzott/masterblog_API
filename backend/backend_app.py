@@ -2,7 +2,7 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 
 app = Flask(__name__)
-CORS(app)  # This will enable CORS for all routes
+CORS(app)
 
 posts = [
     {'id': 1, 'title': 'First post', 'content': 'This is the first post.'},
@@ -12,6 +12,8 @@ posts = [
 
 @app.route('/api/posts', methods=['GET', 'POST'])
 def handle_posts():
+    """allows user to add a new post with title and content (post method),
+    returns list of posts that can be sorted if user enters sort and direction parameters (get method)"""
     if request.method == 'POST':
         new_post = request.get_json()
 
@@ -59,6 +61,8 @@ def handle_posts():
 
 @app.route('/api/posts/<int:post_id>', methods=['DELETE', 'PUT'])
 def update_or_delete_post(post_id):
+    """allows user to delete a post by ID (delete method) or to update an existing
+    post with a new title and/or content (put method)"""
     if request.method=='DELETE':
         to_delete = next((post for post in posts if post['id'] == post_id), None)
         if to_delete is None:
@@ -83,14 +87,17 @@ def update_or_delete_post(post_id):
             to_update['id'] = post_id
 
             return jsonify(to_update), 200
-        return jsonify({'error': 'This ID does not exist'})
+        return jsonify({'error': 'This ID does not exist'}), 404
 
 
 @app.route('/api/posts/search', methods=['GET'])
 def search_post():
+    """allows user to search posts. both post title and content will be checked"""
     #putting empty string as default return so that I dont have to check for empty title/content AND none
     request_param_title = request.args.get('title', '').strip().lower()
     request_param_content = request.args.get('content', '').strip().lower()
+
+    #starting with all posts and then filtering out the relevant ones
     found_posts = posts
 
     if request_param_title:
@@ -101,6 +108,7 @@ def search_post():
 
     if found_posts:
         return jsonify(found_posts)
+    #returns empty list if no posts matching the search criteria have been found
     return jsonify([])
 
 
