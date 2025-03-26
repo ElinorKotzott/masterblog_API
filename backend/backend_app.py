@@ -73,18 +73,17 @@ def search_post():
     #putting empty string as default return so that I dont have to check for empty title/content AND none
     request_param_title = request.args.get('title', '').strip().lower()
     request_param_content = request.args.get('content', '').strip().lower()
-    if request_param_title and request_param_content:
-        found_posts = [post for post in posts if request_param_title in post['title'].lower() and request_param_content in post['content'].lower()]
-        return jsonify(found_posts)
+    found_posts = posts
+
     if request_param_title:
-        found_posts_for_title = [post for post in posts if request_param_title in post['title'].lower()]
-        return jsonify(found_posts_for_title)
+        found_posts = [post for post in found_posts if request_param_title in post['title'].lower()]
+
     if request_param_content:
-        found_posts_for_content = [post for post in posts if request_param_content in post['content'].lower()]
-        return jsonify(found_posts_for_content)
+        found_posts = [post for post in found_posts if request_param_content in post['content'].lower()]
 
-
-
+    if found_posts:
+        return jsonify(found_posts)
+    return jsonify({'error': 'no posts matching your search!'})
 
 
 
